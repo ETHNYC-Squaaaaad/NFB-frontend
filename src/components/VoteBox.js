@@ -1,25 +1,91 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Container, Text, Stack, Title, Progress, Button } from '@mantine/core'
-import { useContractRead } from 'wagmi'
+import { useContractRead, useContractWrite } from 'wagmi'
 import { governanceAddress } from '../constants'
 import governanceAbi from '../constants/abi/Governance.json'
 import { utils } from 'ethers'
 
-const VoteBox = ({ instructionsId }) => {
+const VoteBox = ({ instructionsId, totalSupply, userBalance }) => {
+  const [txnLoading, setTxnLoading] = useState(false)
+  const [error, setError] = useState('')
+
   const activeMetaData = useContractRead(
     {
       addressOrName: governanceAddress,
       contractInterface: governanceAbi,
     },
-    'getMetaData',
+    'getMetadata',
     {
       args: instructionsId,
     },
   )
-  if (
-    activeMetaData.fetchStatus !== 'fetched' ||
-    activeMetaData.isError === true
-  ) {
+
+  const totalEndorsments = useContractRead(
+    {
+      addressOrName: governanceAddress,
+      contractInterface: governanceAbi,
+    },
+    'totalEndorsementsForProposal',
+    {
+      args: instructionsId,
+    },
+  )
+
+  const yesVotes = useContractRead(
+    {
+      addressOrName: governanceAddress,
+      contractInterface: governanceAbi,
+    },
+    'yesVotesForProposal',
+    {
+      args: instructionsId,
+      watch: true,
+    },
+  )
+
+  const noVotes = useContractRead(
+    {
+      addressOrName: governanceAddress,
+      contractInterface: governanceAbi,
+    },
+    'noVotesForProposal',
+    {
+      args: instructionsId,
+      watch: true,
+    },
+  )
+
+  const writeVote = useContractWrite(
+    {
+      addressOrName: governanceAddress,
+      contractInterface: governanceAbi,
+    },
+    'vote',
+    {
+      onSettled(data) {
+        if (data) {
+          data.wait().then((data) => {
+            setTxnLoading(false)
+          })
+        } else {
+          setTxnLoading(false)
+        }
+      },
+      onError(error) {
+        setError('There was an error completing your vote')
+        setTxnLoading(false)
+      },
+    },
+  )
+
+  const castVote = (e, vote) => {
+    e.preventDefault()
+
+    setTxnLoading(true)
+    writeVote.write({ args: [vote] })
+  }
+
+  if (!activeMetaData.isFetched || activeMetaData.isError === true) {
     return <div>Loading....</div>
   }
   return (
@@ -30,18 +96,24 @@ const VoteBox = ({ instructionsId }) => {
       })}
     >
       <Text>{utils.parseBytes32String(activeMetaData.data.proposalName)}</Text>
-      <Text color="blue" size="smal">
-        Proposed by
-      </Text>
+      <Text size="small">Proposed by {activeMetaData?.data.proposer}</Text>
       <Stack>
         <Text size="small">Current Net Votes</Text>
-        <Title>+ 240,141</Title>
+        <Title>{noVotes?.data?.add(yesVotes?.data).toString()}</Title>
         <Progress
           size="xl"
           radius="xl"
           sections={[
-            { value: 50, color: 'green', label: '255,367 YES' },
-            { value: 50, color: 'red', label: '15,156 NO' },
+            {
+              value: 50,
+              color: 'green',
+              label: `${yesVotes?.data?.toString()} YES`,
+            },
+            {
+              value: 50,
+              color: 'red',
+              label: `${noVotes?.data?.toString()} NO`,
+            },
           ]}
         />
         <Container
@@ -49,14 +121,24 @@ const VoteBox = ({ instructionsId }) => {
             backgroundColor: theme.colors.gray[3],
           })}
         >
-          Execution Threshold: 548,303 PROX
+          Execution Threshold: {totalSupply.div(3).toString()}
         </Container>
-        <Text>Your available votes: 15,200 PROX</Text>
+        <Text>Your available votes: {userBalance?.toString()} </Text>
         <Container>
-          <Button color="green" m="xl">
+          <Button
+            color="green"
+            m="xl"
+            onClick={(e) => castVote(e, true)}
+            loading={txnLoading}
+          >
             Yes
           </Button>
-          <Button color="red" m="xl">
+          <Button
+            color="red"
+            m="xl"
+            onClick={(e) => castVote(e, false)}
+            loading={txnLoading}
+          >
             No
           </Button>
         </Container>

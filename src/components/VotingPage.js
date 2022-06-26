@@ -6,6 +6,7 @@ import { tokenAddress, governanceAddress, instrAddress } from '../constants'
 import tokenAbi from '../constants/abi/Token.json'
 import governanceAbi from '../constants/abi/Governance.json'
 import EmptyVoteBox from './EmptyVoteBox'
+import { clampUseMovePosition } from '@mantine/hooks'
 
 const VotingPage = () => {
   const account = useAccount()
@@ -39,6 +40,11 @@ const VotingPage = () => {
       contractInterface: governanceAbi,
     },
     'getActiveProposal',
+    {
+      onError(error) {
+        console.log(error)
+      },
+    },
   )
 
   return (
@@ -74,9 +80,13 @@ const VotingPage = () => {
       <Container fluid style={{ minWidth: '100%' }}>
         <Text weight="bold">Active Proposal Voting</Text>
         {activeProposal?.data?.instructionsId?.gt(0) ? (
-          <VoteBox />
+          <VoteBox
+            instructionsId={activeProposal.data.instructionsId}
+            totalSupply={totalSupply?.data}
+            userBalance={userBalance?.data}
+          />
         ) : (
-          <VoteBox />
+          <EmptyVoteBox />
         )}
       </Container>
       <Container fluid>

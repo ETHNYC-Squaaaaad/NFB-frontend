@@ -221,7 +221,7 @@
     "name": "VOTES",
     "outputs": [
       {
-        "internalType": "contract Votes",
+        "internalType": "contract Token",
         "name": "",
         "type": "address"
       }
@@ -449,6 +449,19 @@
         "internalType": "Kernel.Role[]",
         "name": "roles",
         "type": "bytes32[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rewardRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

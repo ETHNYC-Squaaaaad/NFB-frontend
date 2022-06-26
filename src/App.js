@@ -1,25 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import Layout from './components/Layout'
+import '@rainbow-me/rainbowkit/styles.css'
+import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { chain, configureChains, createClient, WagmiConfig } from 'wagmi'
+import { publicProvider } from 'wagmi/providers/public'
 
 function App() {
+  console.log(chain)
+  const { chains, provider } = configureChains(
+    [
+      chain.mainnet,
+      chain.hardhat,
+      chain.optimism,
+      chain.arbitrum,
+      chain.polygon,
+    ],
+    [publicProvider()],
+  )
+
+  const { connectors } = getDefaultWallets({
+    appName: 'True Governance',
+    chains,
+  })
+
+  const wagmiClient = createClient({
+    autoConnect: true,
+    connectors,
+    provider,
+  })
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <WagmiConfig client={wagmiClient}>
+      <RainbowKitProvider chains={chains}>
+        <Layout />
+      </RainbowKitProvider>
+    </WagmiConfig>
+  )
 }
 
-export default App;
+export default App

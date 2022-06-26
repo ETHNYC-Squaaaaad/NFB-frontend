@@ -42,6 +42,9 @@ const AddProp = () => {
         if (data) {
           data.wait().then(() => {
             setLoading(false)
+            setAddress('')
+            setActionArr([])
+            setPropName('')
           })
         }
         setLoading(false)

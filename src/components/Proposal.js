@@ -111,14 +111,16 @@ const Proposal = ({ proposalId, totalSupply }) => {
               You Endorsed:
             </Text>
             <Text weight="bold">{userEndorsements?.data?.toString()}</Text>
-            <Button
-              size="sm"
-              onClick={(e) => endorseProposal(e)}
-              color="green"
-              loading={loading}
-            >
-              Endorse
-            </Button>
+            {userEndorsements?.data?.eq(0) && (
+              <Button
+                size="sm"
+                onClick={(e) => endorseProposal(e)}
+                color="green"
+                loading={loading}
+              >
+                Endorse
+              </Button>
+            )}
           </Stack>
         </Grid.Col>
       </Grid>

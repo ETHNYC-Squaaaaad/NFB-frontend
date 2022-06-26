@@ -43,6 +43,7 @@ const VotingPage = () => {
     {
       enabled: account?.data?.address ? true : false,
       args: account?.data?.address,
+      watch: true,
     },
   )
 
@@ -135,9 +136,18 @@ const VotingPage = () => {
       <Container fluid>
         <Tabs variant="pills">
           <Tabs.Tab label="Upcoming Proposals">
-            <Button onClick={() => setShowModal(!showModal)}>
-              Submit Proposal
-            </Button>
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Button onClick={() => setShowModal(!showModal)}>
+                Submit Proposal
+              </Button>
+            </div>
             <Modal
               opened={showModal}
               closeOnClickOutside

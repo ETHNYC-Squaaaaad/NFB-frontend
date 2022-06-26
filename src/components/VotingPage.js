@@ -1,15 +1,27 @@
-import React from 'react'
-import { Stack, Container, Group, Text, Tabs } from '@mantine/core'
+import React, { useState } from 'react'
+import {
+  Stack,
+  Container,
+  Group,
+  Text,
+  Tabs,
+  Modal,
+  Button,
+} from '@mantine/core'
 import VoteBox from './VoteBox'
-import { useContractRead, useAccount } from 'wagmi'
-import { tokenAddress, governanceAddress, instrAddress } from '../constants'
+import { useContractRead, useAccount, useContractWrite } from 'wagmi'
+import { tokenAddress, governanceAddress, faucetAddress } from '../constants'
 import tokenAbi from '../constants/abi/Token.json'
 import governanceAbi from '../constants/abi/Governance.json'
+import faucetAbi from '../constants/abi/Faucet.json'
 import EmptyVoteBox from './EmptyVoteBox'
-import { clampUseMovePosition } from '@mantine/hooks'
+import ProposalViewer from './ProposalViewer'
+import AddProp from './AddProp'
 
 const VotingPage = () => {
   const account = useAccount()
+  const [showModal, setShowModal] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const totalSupply = useContractRead(
     {
@@ -47,6 +59,32 @@ const VotingPage = () => {
     },
   )
 
+  const mintVoteWrite = useContractWrite(
+    {
+      addressOrName: faucetAddress,
+      contractInterface: faucetAbi,
+    },
+    'mintMeTokens',
+    {
+      args: 10,
+      onSettled(data) {
+        if (data) {
+          data.wait().then(() => {
+            setLoading(false)
+          })
+        } else {
+          setLoading(false)
+        }
+      },
+    },
+  )
+
+  const mintVote = (e) => {
+    e.preventDefault()
+    setLoading(true)
+    mintVoteWrite.write()
+  }
+
   return (
     <Stack>
       <Container fluid style={{ minWidth: '100%' }}>
@@ -63,6 +101,11 @@ const VotingPage = () => {
             <Text color="dimmed">Total VOTE Supply</Text>
             <Text>{totalSupply?.data?.toString()}</Text>
           </Container>
+          {userBalance.isFetched && userBalance?.data?.eq(0) && (
+            <Button size="xl" onClick={(e) => mintVote(e)} disabled={loading}>
+              Mint VOTE
+            </Button>
+          )}
           <Container
             p="lg"
             sx={(theme) => ({
@@ -91,9 +134,22 @@ const VotingPage = () => {
       </Container>
       <Container fluid>
         <Tabs variant="pills">
-          <Tabs.Tab label="Upcoming Proposals"></Tabs.Tab>
+          <Tabs.Tab label="Upcoming Proposals">
+            <Button onClick={() => setShowModal(!showModal)}>
+              Submit Proposal
+            </Button>
+            <Modal
+              opened={showModal}
+              closeOnClickOutside
+              closeOnEscape
+              onClose={() => setShowModal(false)}
+              size="xl"
+            >
+              <AddProp />
+            </Modal>
+            <ProposalViewer totalSupply={totalSupply} />
+          </Tabs.Tab>
           <Tabs.Tab label="Archived Proposals"></Tabs.Tab>
-          <Tabs.Tab label="Expired Proposals"></Tabs.Tab>
         </Tabs>
       </Container>
     </Stack>

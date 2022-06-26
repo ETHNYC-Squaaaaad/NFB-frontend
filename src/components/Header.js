@@ -13,13 +13,13 @@ const Header = () => {
         alignItems: 'center',
       })}
     >
-      <div></div>
-      <div>
+      <div style={{ width: '33%' }}></div>
+      <div style={{ width: '33%', textAlign: 'center' }}>
         <Text style={{ marginLeft: 'auto', marginRight: 'auto' }}>
           Working Title
         </Text>
       </div>
-      <div>
+      <div style={{ width: '33%', display: 'flex', justifyContent: 'end' }}>
         <ConnectButton style={{ marginLeft: 'auto' }} />
       </div>
     </MantineHeader>

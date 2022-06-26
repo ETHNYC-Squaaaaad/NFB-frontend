@@ -15,9 +15,7 @@ const Header = () => {
     >
       <div style={{ width: '33%' }}></div>
       <div style={{ width: '33%', textAlign: 'center' }}>
-        <Text style={{ marginLeft: 'auto', marginRight: 'auto' }}>
-          Working Title
-        </Text>
+        <Text style={{ marginLeft: 'auto', marginRight: 'auto' }}>Guvna</Text>
       </div>
       <div style={{ width: '33%', display: 'flex', justifyContent: 'end' }}>
         <ConnectButton style={{ marginLeft: 'auto' }} />

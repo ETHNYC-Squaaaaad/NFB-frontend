@@ -28,6 +28,7 @@ const VoteBox = ({ instructionsId, totalSupply, userBalance }) => {
     'totalEndorsementsForProposal',
     {
       args: instructionsId,
+      watch: true,
     },
   )
 
